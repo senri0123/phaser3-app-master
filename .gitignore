@@ -5,3 +5,11 @@ app01/product/
 app01/dist/
 app01/.vscode/
 app01/src/assets/
+app02/.vscode/
+app02/develop/
+app02/dist/
+app02/doc/
+app02/node_modules/
+app02/product/assets/
+app02/product/
+app02/src/assets/
