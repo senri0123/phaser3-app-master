@@ -2,8 +2,12 @@ import { Assets, Consts } from "../consts";
 
 export class SceneLoading extends Phaser.Scene {
 
+    private text: Phaser.GameObjects.Text | null;
+
     constructor() {
         super({ key: "Loading" });
+
+        this.text = null;
     }
 
     preload() {
@@ -37,6 +41,25 @@ export class SceneLoading extends Phaser.Scene {
             const file = Assets.Tilemaps[i].FILE;
             this.load.tilemapTiledJSON(key, file);
         }
+
+        //ロード進捗
+        {
+            const x = this.game.canvas.width * 0.5;
+            const y = this.game.canvas.height * 0.5;
+            const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+                font: "18px Arial",
+                color: "#0000FF"
+            }
+            this.text = this.add.text(x, y, '', textStyle);
+            this.text.setOrigin(0.5, 0.5);
+        }
+        this.scene.scene.load.on('progress', (progress: number) => {
+            this.text?.setText(`Loading...  ${Math.floor(progress * 100)}%`);
+        }, this);
+        this.scene.scene.load.on('complete', () => {
+            this.text?.destroy();
+            console.log('load complete');
+        }, this);
     }
 
     create() {

@@ -26,7 +26,7 @@ import { BehaviorTimeup } from "../behavior/behavior-timeup";
 import { getStageConfig, getStageCount, getTilemapConfig, StageConfig } from "../objects/stage/stage";
 import { Timer } from "../service/timer";
 import { BehaviorTimeAttackClear } from "../behavior/behavior-timeattack-clear";
-import { atsumaru_getVolume, atsumaru_onChangeVolume } from "../atsumaru/atsumaru";
+import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
 import { BehaviorScoreBoard } from "../behavior/behavior-scoreboard";
 import { BehaviorReturnTile } from "../behavior/behavior-returntitle";
 
@@ -169,6 +169,9 @@ export class SceneMain extends Phaser.Scene {
         this._createInterface();
 
         this._createSound();
+
+        //スクリーンショット撮影のシーン登録
+        atsumaru_setScreenshoScene(this);
     }
 
     update(time: number, delta: number): void {

@@ -1,4 +1,4 @@
-import { atsumaru_getVolume, atsumaru_onChangeVolume } from "../atsumaru/atsumaru";
+import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
 import { Assets, Consts } from "../consts";
 import { Globals } from "../globals";
 
@@ -36,6 +36,9 @@ export class SceneTitle extends Phaser.Scene {
 
         this.bgm = this.sound.add(Assets.Audio.BGM.BGMOP);
         this.bgm.play();
+
+        //スクリーンショット撮影のシーン登録
+        atsumaru_setScreenshoScene(this);
     }
 
     update(): void {

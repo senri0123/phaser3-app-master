@@ -57,6 +57,61 @@ export function atsumaru_tweetScreenShot(): void {
     });
 }
 
+//スクリーンショット画像差し替え実行
+let currentScene: Phaser.Scene | null = null;
+let lastImage: HTMLImageElement | null = null;
+
+//スクリーンショットコールバック
+function _snapshot(snapshot: Phaser.Display.Color | HTMLImageElement) {
+    console.log("_snapshot called");
+
+    //前回くっつけた画像がある場合は外す
+    if (lastImage != null) {
+        document.body.removeChild(lastImage);
+        lastImage = null;
+    }
+
+    //画像を追加する
+    lastImage = snapshot as HTMLImageElement;
+    document.body.appendChild(lastImage);
+}
+
+//スリープ
+async function _sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function atsumaru_screenshotHandler(): Promise<string> {
+    console.log("atsumaru_screenshotHandler called");
+
+    if (currentScene == null) {
+        console.log("currentScene == null");
+        return "";
+    }
+    else {
+        currentScene.game.renderer.snapshot(_snapshot);
+        //snapshotを読んだあと、コールバック処理関数の処理を行うのにラグがあるため、スリープで待つ。
+        await _sleep(100);
+        if (lastImage != null) {
+            return lastImage.currentSrc;
+        }
+        else {
+            return "";
+        }
+    }
+}
+
+//スクリーンショット画像差し替え
+export function atsumaru_setScreenshoScene(scene: Phaser.Scene): void {
+    currentScene = scene;
+
+    _withAtsumaru(atsumaru => {
+        atsumaru.experimental?.screenshot?.setScreenshotHandler?.(atsumaru_screenshotHandler);
+    });
+
+    console.log("atsumaru_setScreenshoScene called.");
+}
+
 //サーバーデータ取得
 let loadServerDataCallback: ((result: number, data: { key: string, value: string }[]) => void) | null = null;
 export function atsumaru_loadServerData(fn: (result: number, data: { key: string, value: string }[]) => void): void {

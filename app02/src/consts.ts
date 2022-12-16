@@ -3,7 +3,7 @@
  */
 export const Consts = {
     TITLE: "SPHERE DECIDE",
-    VERSION: "202212131243",
+    VERSION: "202212161802",
 
     //画面サイズ
     Screen: {
