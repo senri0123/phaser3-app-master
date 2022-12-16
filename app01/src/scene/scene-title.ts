@@ -1,4 +1,4 @@
-import { atsumaru_getVolume, atsumaru_onChangeVolume } from "../atsumaru/atsumaru";
+import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_screenshotHandler, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
 import { Consts } from "../consts";
 import { Globals } from "../globals";
 import { Control } from "../life-game/control";
@@ -64,6 +64,9 @@ export class SceneTitle extends Phaser.Scene {
         this._createTimer();
         this._createSound();
         this._setupDemo();
+
+        //スクリーンショット撮影のシーン登録
+        atsumaru_setScreenshoScene(this);
     }
 
     update(): void {

@@ -3,7 +3,7 @@
  */
 export const Consts = {
     //version
-    VERSION: "202212041022",
+    VERSION: "202212141838",
 
     //画面サイズ
     Screen: {

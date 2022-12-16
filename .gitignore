@@ -13,3 +13,8 @@ app02/node_modules/
 app02/product/assets/
 app02/product/
 app02/src/assets/
+app03/dist/
+app03/node_modules/
+app03/doc/
+app03/develop/
+app03/.vscode/

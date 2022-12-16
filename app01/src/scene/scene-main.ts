@@ -7,7 +7,7 @@ import { uiMode, uiModeConfig } from "../life-game/ui/ui-mode";
 import { uiString, uiStringConfig } from "../life-game/ui/ui-string";
 import { uiMessage } from "../life-game/ui/ui-message";
 import { uiSpeed, uiSpeedConfig } from "../life-game/ui/ui-speed";
-import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_saveServerData } from "../atsumaru/atsumaru";
+import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_saveServerData, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
 import { Globals } from "../globals";
 
 export class SceneMain extends Phaser.Scene {
@@ -59,6 +59,9 @@ export class SceneMain extends Phaser.Scene {
         this._createUITitle();
         this._createUISpeed();
         this._createSound();
+
+        //スクリーンショット撮影のシーン登録
+        atsumaru_setScreenshoScene(this);
     }
 
     update(): void {
