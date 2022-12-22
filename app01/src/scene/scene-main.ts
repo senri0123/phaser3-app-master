@@ -7,7 +7,7 @@ import { uiMode, uiModeConfig } from "../life-game/ui/ui-mode";
 import { uiString, uiStringConfig } from "../life-game/ui/ui-string";
 import { uiMessage } from "../life-game/ui/ui-message";
 import { uiSpeed, uiSpeedConfig } from "../life-game/ui/ui-speed";
-import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_saveServerData, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
+import { AtsumaruConsts, AtsumaruMasterVolume, AtsumaruMasterVolumeInfo, AtsumaruServerDataSave, AtsumaruServerSaveInfo, AtsumaruSnapShot } from "../atsumaru/atsumaru";
 import { Globals } from "../globals";
 
 export class SceneMain extends Phaser.Scene {
@@ -23,7 +23,12 @@ export class SceneMain extends Phaser.Scene {
     private uiSpeed: uiSpeed | null;
 
     private bgm: Phaser.Sound.BaseSound | null;
+    private atsuServerDataSave: AtsumaruServerDataSave | null
     private atsumaruSaveResult: number;
+
+    //@@@test
+    private atsuVolume: AtsumaruMasterVolume;
+    private atsuSnapShot: AtsumaruSnapShot;
 
 
     constructor() {
@@ -40,7 +45,11 @@ export class SceneMain extends Phaser.Scene {
         this.uiBackGround = null;
         this.bgm = null;
 
-        this.atsumaruSaveResult = Consts.Atsumaru.CommStat.NONE;
+        this.atsuServerDataSave = null;
+        this.atsumaruSaveResult = AtsumaruConsts.CommStat.NONE;
+
+        this.atsuVolume = new AtsumaruMasterVolume();
+        this.atsuSnapShot = new AtsumaruSnapShot();
     }
 
     preload() {
@@ -61,7 +70,11 @@ export class SceneMain extends Phaser.Scene {
         this._createSound();
 
         //スクリーンショット撮影のシーン登録
-        atsumaru_setScreenshoScene(this);
+        // atsumaru_setScreenshoScene(this);
+        this.atsuSnapShot.initialize();
+        this.atsuSnapShot.setScene(this);
+
+        this.atsuServerDataSave = new AtsumaruServerDataSave();
     }
 
     update(): void {
@@ -82,7 +95,7 @@ export class SceneMain extends Phaser.Scene {
             //保存ボタンが押された
             if (this.lifeGame) {
                 const text = this.lifeGame.toString();
-                Globals.get().serverDataMan.set({ key: Consts.Atsumaru.Data.KEY, value: text });
+                Globals.get().serverDataMan.set({ key: AtsumaruConsts.Data.KEY, value: text });
             }
             this._saveData();
         }
@@ -98,7 +111,7 @@ export class SceneMain extends Phaser.Scene {
         let restoreData: string = "";
         let restored: boolean = false;
         if (Globals.get().continue) {
-            restoreData = Globals.get().serverDataMan.get(Consts.Atsumaru.Data.KEY)
+            restoreData = Globals.get().serverDataMan.get(AtsumaruConsts.Data.KEY)
             restored = (restoreData.length > 0);
         }
 
@@ -229,27 +242,55 @@ export class SceneMain extends Phaser.Scene {
         this.bgm.play({ loop: true });
 
         //現在のボリュームを取得し設定
-        const volume = atsumaru_getVolume();
-        if (volume) {
-            this.sound.volume = volume;
+        this.atsuVolume.initialize();
+        {
+            const info = this.atsuVolume.getMasterVolume();
+            if (info != null) {
+                this.sound.volume = info.volume;
+            }
         }
-        //ボリュームが変わったときのコールバックを設定
-        atsumaru_onChangeVolume((volume: number) => {
-            this.sound.volume = volume;
-            // console.log("_onChangeVolume volume:" + volume);
+        //ボリューム変更コールバック
+        this.atsuVolume.setCallback((info: AtsumaruMasterVolumeInfo) => {
+            if (info != null) {
+                this.sound.volume = info.volume;
+            }
         });
+
+        //現在のボリュームを取得し設定
+        // const volume = atsumaru_getVolume();
+        // if (volume) {
+        //     this.sound.volume = volume;
+        // }
+        // //ボリュームが変わったときのコールバックを設定
+        // atsumaru_onChangeVolume((volume: number) => {
+        //     this.sound.volume = volume;
+        //     // console.log("_onChangeVolume volume:" + volume);
+        // });
     }
 
     private _saveData(): void {
-        this.atsumaruSaveResult = Consts.Atsumaru.CommStat.NONE;
+        this.atsumaruSaveResult = AtsumaruConsts.CommStat.NONE;
         if (this.lifeGame) {
 
             //保存データ作成
-            const saveData = Globals.get().serverDataMan.getDirtyValues();
-            if (saveData.length > 0) {
-                atsumaru_saveServerData(saveData, (result: number) => {
-                    this.atsumaruSaveResult = result;
-                    console.log("Atsumaru ServerDataSave result:" + result);
+            // const saveData = Globals.get().serverDataMan.getDirtyValues();
+            // if (saveData.length > 0) {
+            //     atsumaru_saveServerData(saveData, (result: number) => {
+            //         this.atsumaruSaveResult = result;
+            //         console.log("Atsumaru ServerDataSave result:" + result);
+            //     });
+            // }
+
+            if (this.atsuServerDataSave != null) {
+                // this.atsuServerDataSave.setCallback((info: AtsumaruServerSaveInfo) => {
+                //     this.atsumaruSaveResult = info.stat;
+                //     console.log("Atsumaru ServerDataSave result:" + info.stat);
+                // });
+
+                const saveData = Globals.get().serverDataMan.getDirtyValues();
+                this.atsuServerDataSave.save(saveData, (info: AtsumaruServerSaveInfo) => {
+                    this.atsumaruSaveResult = info.stat;
+                    console.log("Atsumaru ServerDataSave result:" + info.stat);
                 });
             }
             Globals.get().serverDataMan.clearDitry();

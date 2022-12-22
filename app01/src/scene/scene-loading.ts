@@ -1,16 +1,18 @@
 import { Consts } from "../consts";
-import { atsumaru_loadServerData } from "../atsumaru/atsumaru";
+import { AtsumaruConsts, AtsumaruServerDataLoad } from "../atsumaru/atsumaru";
 import PostFXBlur from "../assets/pipelines/PostFXBlur";
 import { Globals } from "../globals";
 
 export class SceneLoading extends Phaser.Scene {
 
     private atsumaruLoadResult: number;
+    private atsuServerDataLoad: AtsumaruServerDataLoad | null;
 
     constructor() {
         super({ key: "Loading" });
 
-        this.atsumaruLoadResult = Consts.Atsumaru.CommStat.NONE;
+        this.atsumaruLoadResult = AtsumaruConsts.CommStat.NONE;
+        this.atsuServerDataLoad = null;
     }
 
     preload() {
@@ -38,34 +40,60 @@ export class SceneLoading extends Phaser.Scene {
     }
 
     create(): void {
-        this.atsumaruLoadResult = Consts.Atsumaru.CommStat.NONE;
-        atsumaru_loadServerData((result: number, data: { key: string, value: string }[]) => {
-            this.atsumaruLoadResult = result;
-            console.log("Atsumaru ServerDataLoad result:" + result);
+        // this.atsumaruLoadResult = Consts.Atsumaru.CommStat.NONE;
+        // atsumaru_loadServerData((result: number, data: { key: string, value: string }[]) => {
+        //     this.atsumaruLoadResult = result;
+        //     console.log("Atsumaru ServerDataLoad result:" + result);
 
-            if (this.atsumaruLoadResult === Consts.Atsumaru.CommStat.SUCCESS) {
-                for (let i = 0; i < data.length; i++) {
-                    Globals.get().serverDataMan.set(data[i]);
-                }
-            }
-        });
+        //     if (this.atsumaruLoadResult === Consts.Atsumaru.CommStat.SUCCESS) {
+        //         for (let i = 0; i < data.length; i++) {
+        //             Globals.get().serverDataMan.set(data[i]);
+        //         }
+        //     }
+        // });
+
+        this.atsuServerDataLoad = new AtsumaruServerDataLoad();
+
+        this.atsuServerDataLoad.load();
     }
 
     update(): void {
-        switch (this.atsumaruLoadResult) {
-            case Consts.Atsumaru.CommStat.DURING:
-                //ロード中
-                return;
+        // switch (this.atsumaruLoadResult) {
+        //     case Consts.Atsumaru.CommStat.DURING:
+        //         //ロード中
+        //         return;
 
-            case Consts.Atsumaru.CommStat.DURING:
-                //成功
-                break;
+        //     case Consts.Atsumaru.CommStat.DURING:
+        //         //成功
+        //         break;
 
-            default:
-                //アツマールが有効でない or 失敗した
-                break;
+        //     default:
+        //         //アツマールが有効でない or 失敗した
+        //         break;
+        // }
+
+        // this.scene.start("Title");
+
+        let wait = false;
+        if (this.atsuServerDataLoad != null) {
+            const result = this.atsuServerDataLoad.check();
+            switch (result.stat) {
+                case AtsumaruConsts.CommStat.DURING: {
+                    wait = true;
+                    break;  //ロード中
+                }
+                case AtsumaruConsts.CommStat.SUCCESS: {
+                    console.log("Atsumaru ServerDataLoad result:" + result.stat);
+                    for (let i = 0; i < result.data.length; i++) {
+                        Globals.get().serverDataMan.set(result.data[i]);
+                    }
+                    break;
+                }
+            }
         }
 
-        this.scene.start("Title");
+        if (!wait) {
+            this.scene.start("Title");
+        }
     }
 }

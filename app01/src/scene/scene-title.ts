@@ -1,4 +1,4 @@
-import { atsumaru_getVolume, atsumaru_onChangeVolume, atsumaru_screenshotHandler, atsumaru_setScreenshoScene } from "../atsumaru/atsumaru";
+import { AtsumaruConsts, AtsumaruMasterVolume, AtsumaruMasterVolumeInfo, AtsumaruSnapShot } from "../atsumaru/atsumaru";
 import { Consts } from "../consts";
 import { Globals } from "../globals";
 import { Control } from "../life-game/control";
@@ -23,6 +23,10 @@ export class SceneTitle extends Phaser.Scene {
 
     private serverDataValidation: boolean;
 
+    //@@@test
+    private atsuVolume: AtsumaruMasterVolume;
+    private atsuSnapShot: AtsumaruSnapShot;
+
     constructor() {
         super({ key: "Title" });
 
@@ -41,6 +45,9 @@ export class SceneTitle extends Phaser.Scene {
         this.bgm = null;
 
         this.serverDataValidation = false;
+
+        this.atsuVolume = new AtsumaruMasterVolume();
+        this.atsuSnapShot = new AtsumaruSnapShot();
     }
 
     preload() {
@@ -52,7 +59,7 @@ export class SceneTitle extends Phaser.Scene {
         Globals.get().reset();
 
         //サーバデータの確認
-        this.serverDataValidation = Globals.get().serverDataMan.has(Consts.Atsumaru.Data.KEY);
+        this.serverDataValidation = Globals.get().serverDataMan.has(AtsumaruConsts.Data.KEY);
 
         this._createPanel();
         this._createTitle();
@@ -66,7 +73,9 @@ export class SceneTitle extends Phaser.Scene {
         this._setupDemo();
 
         //スクリーンショット撮影のシーン登録
-        atsumaru_setScreenshoScene(this);
+        // atsumaru_setScreenshoScene(this);
+        this.atsuSnapShot.initialize();
+        this.atsuSnapShot.setScene(this);
     }
 
     update(): void {
@@ -244,16 +253,30 @@ export class SceneTitle extends Phaser.Scene {
         this.bgm = this.sound.add(Consts.Assets.Audio.BGM.NAME);
 
         //現在のボリュームを取得し設定
-        const volume = atsumaru_getVolume();
-        if (volume) {
-            // this._onChangeVolume(volume);
-            this.sound.volume = volume;
+        this.atsuVolume.initialize();
+        {
+            const info = this.atsuVolume.getMasterVolume();
+            if (info != null) {
+                this.sound.volume = info.volume;
+            }
         }
-        //ボリュームが変わったときのコールバックを設定
-        atsumaru_onChangeVolume((volume: number) => {
-            this.sound.volume = volume;
-            // console.log("_onChangeVolume volume:" + volume);
+        //ボリューム変更コールバック
+        this.atsuVolume.setCallback((info: AtsumaruMasterVolumeInfo) => {
+            if (info != null) {
+                this.sound.volume = info.volume;
+            }
         });
+
+        // const volume = atsumaru_getVolume();
+        // if (volume) {
+        //     // this._onChangeVolume(volume);
+        //     this.sound.volume = volume;
+        // }
+        // //ボリュームが変わったときのコールバックを設定
+        // atsumaru_onChangeVolume((volume: number) => {
+        //     this.sound.volume = volume;
+        //     // console.log("_onChangeVolume volume:" + volume);
+        // });
 
         // this.bgm.play();
 

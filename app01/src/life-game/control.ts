@@ -1,5 +1,4 @@
 
-import { atsumaru_tweetScreenShot } from "../atsumaru/atsumaru";
 import { Consts } from "../consts";
 
 export class Control {
@@ -226,7 +225,6 @@ export class Control {
             this.saveData = true;
         }
         else if (this.statScreenShot) {
-            atsumaru_tweetScreenShot();
         }
         else {
             ;

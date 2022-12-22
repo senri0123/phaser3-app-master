@@ -3,7 +3,7 @@
  */
 export const Consts = {
     //version
-    VERSION: "202212141838",
+    VERSION: "202212221241",
 
     //画面サイズ
     Screen: {
@@ -211,17 +211,17 @@ export const Consts = {
     },
 
     //アツマール用
-    Atsumaru: {
-        Data: {
-            KEY: "cells",
-        },
-        CommStat: {
-            NONE: 0,    //通信していない
-            DURING: 1,  //通信中
-            SUCCESS: 2, //成功
-            FAIL: 3,     //失敗
-        },
-    },
+    // Atsumaru: {
+    //     Data: {
+    //         KEY: "cells",
+    //     },
+    //     CommStat: {
+    //         NONE: 0,    //通信していない
+    //         DURING: 1,  //通信中
+    //         SUCCESS: 2, //成功
+    //         FAIL: 3,     //失敗
+    //     },
+    // },
 
     //アセット定義
     Assets: {
