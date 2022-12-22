@@ -7,7 +7,7 @@ import { uiMode, uiModeConfig } from "../life-game/ui/ui-mode";
 import { uiString, uiStringConfig } from "../life-game/ui/ui-string";
 import { uiMessage } from "../life-game/ui/ui-message";
 import { uiSpeed, uiSpeedConfig } from "../life-game/ui/ui-speed";
-import { AtsumaruConsts, AtsumaruMasterVolume, AtsumaruMasterVolumeInfo, AtsumaruServerDataSave, AtsumaruServerSaveInfo, AtsumaruSnapShot } from "../atsumaru/atsumaru";
+import { AtsumaruConsts, AtsumaruMasterVolume, AtsumaruMasterVolumeInfo, AtsumaruServerDataSave, AtsumaruSnapShot } from "../atsumaru/atsumaru";
 import { Globals } from "../globals";
 
 export class SceneMain extends Phaser.Scene {
@@ -288,9 +288,9 @@ export class SceneMain extends Phaser.Scene {
                 // });
 
                 const saveData = Globals.get().serverDataMan.getDirtyValues();
-                this.atsuServerDataSave.save(saveData, (info: AtsumaruServerSaveInfo) => {
-                    this.atsumaruSaveResult = info.stat;
-                    console.log("Atsumaru ServerDataSave result:" + info.stat);
+                this.atsuServerDataSave.save(saveData, (stat: number) => {
+                    this.atsumaruSaveResult = stat;
+                    console.log("Atsumaru ServerDataSave result:" + stat);
                 });
             }
             Globals.get().serverDataMan.clearDitry();

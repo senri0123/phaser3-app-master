@@ -290,14 +290,10 @@ export class AtsumaruServerDataLoad extends AtsumaruWrapperBase {
 }
 
 //--- server data save -----------------------
-export type AtsumaruServerSaveInfo = {
-    stat: number,
-};
-
 export class AtsumaruServerDataSave extends AtsumaruWrapperBase {
 
     private stat: number;
-    private callback: ((info: AtsumaruServerSaveInfo) => void) | null;
+    private callback: ((stat: number) => void) | null;
 
     constructor() {
         super();
@@ -305,11 +301,11 @@ export class AtsumaruServerDataSave extends AtsumaruWrapperBase {
         this.callback = null;
     }
 
-    setCallback(fn: (info: AtsumaruServerSaveInfo) => void): void {
+    setCallback(fn: (stat: number) => void): void {
         this.callback = fn;
     }
 
-    save(data: StorageItem[], callback?: (info: AtsumaruServerSaveInfo) => void): void {
+    save(data: StorageItem[], callback?: (stat: number) => void): void {
         console.log('AtsumaruServerDataSave called.');
 
         if (callback != null) {
@@ -321,7 +317,7 @@ export class AtsumaruServerDataSave extends AtsumaruWrapperBase {
             console.log("AtsumaruServerDataLoad. Atsumaru not in work.");
             this.stat = AtsumaruConsts.CommStat.FAIL;
             if (this.callback != null) {
-                this.callback({ stat: this.stat });
+                this.callback(this.stat);
             }
             return;
         }
@@ -336,7 +332,7 @@ export class AtsumaruServerDataSave extends AtsumaruWrapperBase {
                     console.log("Atsumaru atsumaru.storage.setItems() success.");
                     this.stat = AtsumaruConsts.CommStat.SUCCESS;
                     if (this.callback != null) {
-                        this.callback({ stat: this.stat });
+                        this.callback(this.stat);
                     }
                 })
                 .catch((error: AtsumaruApiError) => {
@@ -344,27 +340,22 @@ export class AtsumaruServerDataSave extends AtsumaruWrapperBase {
                     console.log("Atsumaru atsumaru.storage.setItems() fail.");
                     this.stat = AtsumaruConsts.CommStat.FAIL;
                     if (this.callback != null) {
-                        this.callback({ stat: this.stat });
+                        this.callback(this.stat);
                     }
                 });
         });
     }
 
-    check(): AtsumaruServerSaveInfo {
-        const info: AtsumaruServerSaveInfo = { stat: this.stat };
-        return info;
+    check(): number {
+        return this.stat;
     }
 }
 
 //--- server data delete -----------------------
-export type AtsumaruServerDeleteInfo = {
-    stat: number,
-};
-
 export class AtsumaruServerDataDelete extends AtsumaruWrapperBase {
 
     private stat: number;
-    private callback: ((info: AtsumaruServerDeleteInfo) => void) | null;
+    private callback: ((stat: number) => void) | null;
 
     constructor() {
         super();
@@ -372,11 +363,11 @@ export class AtsumaruServerDataDelete extends AtsumaruWrapperBase {
         this.callback = null;
     }
 
-    setCallback(fn: (info: AtsumaruServerDeleteInfo) => void): void {
+    setCallback(fn: (stat: number) => void): void {
         this.callback = fn;
     }
 
-    delete(key: string, callback?: (info: AtsumaruServerDeleteInfo) => void): void {
+    delete(key: string, callback?: (stat: number) => void): void {
         console.log('AtsumaruServerDataDelete called.');
 
         if (callback != null) {
@@ -388,7 +379,7 @@ export class AtsumaruServerDataDelete extends AtsumaruWrapperBase {
             console.log("AtsumaruServerDataDelete. Atsumaru not in work.");
             this.stat = AtsumaruConsts.CommStat.FAIL;
             if (this.callback != null) {
-                this.callback({ stat: this.stat });
+                this.callback(this.stat);
             }
             return;
         }
@@ -396,12 +387,14 @@ export class AtsumaruServerDataDelete extends AtsumaruWrapperBase {
         //データ削除
         this._withAtsumaru(atsumaru => {
             console.log("Atsumaru atsumaru.storage.removeItem() start.");
+            this.stat = AtsumaruConsts.CommStat.DURING;
+
             atsumaru.storage.removeItem(key)
                 .then((value) => {
                     console.log("Atsumaru atsumaru.storage.removeItem() success.");
                     this.stat = AtsumaruConsts.CommStat.SUCCESS;
                     if (this.callback != null) {
-                        this.callback({ stat: this.stat });
+                        this.callback(this.stat);
                     }
                 })
                 .catch((error: AtsumaruApiError) => {
@@ -409,227 +402,140 @@ export class AtsumaruServerDataDelete extends AtsumaruWrapperBase {
                     console.log("Atsumaru atsumaru.storage.removeItem() fail.");
                     this.stat = AtsumaruConsts.CommStat.FAIL;
                     if (this.callback != null) {
-                        this.callback({ stat: this.stat });
+                        this.callback(this.stat);
                     }
                 });
         });
     }
 
-    check(): AtsumaruServerDeleteInfo {
-        const info: AtsumaruServerDeleteInfo = { stat: this.stat };
-        return info;
+    check(): number {
+        return this.stat;
     }
 }
 
 
-// //Atumaruが有効かどうか
-// export function atsumaru_isValid(): boolean {
-//     const atsumaru = window.RPGAtsumaru;
-//     if (atsumaru) {
-//         return true;
-//     }
-//     else {
-//         return false;
-//     }
-// }
+//--- scoreboard save -----------------------
+export class AtsumaruScoreboardSave extends AtsumaruWrapperBase {
 
-// //マスターボリュームを取得
-// export function atsumaru_getVolume(): number | undefined {
-//     let volume = undefined;
-//     _withAtsumaru(atsumaru => {
-//         volume = atsumaru.volume.getCurrentValue();
-//         console.log("Atsumaru atsumaru.volume.getCurrentValue volume=" + volume);
-//     });
-//     return volume;
-// }
+    private stat: number;
+    private callback: ((stat: number) => void) | null;
 
-// //マスターボリューム変更コールバックを設定
-// export function atsumaru_onChangeVolume(fn: (volume: number) => void) {
-//     _withAtsumaru(atsumaru => atsumaru.volume.changed.subscribe(fn));
-// }
+    constructor() {
+        super();
 
+        this.stat = AtsumaruConsts.CommStat.NONE;
+        this.callback = null;
+    }
 
-// //スクリーンショット
-// export function atsumaru_tweetScreenShot(): void {
-//     _withAtsumaru(atsumaru => {
-//         atsumaru.experimental?.screenshot?.displayModal?.()
-//             .then((value) => {
-//                 console.log("atsumaru.experimental.screenshot.displayModal() success.");
-//             })
-//             .catch((error: AtsumaruApiError) => {
-//                 console.error(error.message)
-//                 console.log("atsumaru.experimental.screenshot.displayModal() fail.");
-//             });
-//     });
-// }
+    setCallback(fn: (stat: number) => void): void {
+        this.callback = fn;
+    }
 
-// //スクリーンショット画像差し替え実行
-// let currentScene: Phaser.Scene | null = null;
-// let lastImage: HTMLImageElement | null = null;
+    save(boardId: number, score: number, callback?: (stat: number) => void): void {
+        console.log('AtsumaruScoreboardSave called.');
 
-// //スクリーンショットコールバック
-// function _snapshot(snapshot: Phaser.Display.Color | HTMLImageElement) {
-//     console.log("_snapshot called");
+        if (callback != null) {
+            this.setCallback(callback);
+        }
 
-//     //前回くっつけた画像がある場合は外す
-//     if (lastImage != null) {
-//         document.body.removeChild(lastImage);
-//         lastImage = null;
-//     }
+        if (!this._isValid()) {
+            //アツマールが有効ではない
+            console.log("AtsumaruScoreboardSave. Atsumaru not in work.");
+            this.stat = AtsumaruConsts.CommStat.FAIL;
+            if (this.callback != null) {
+                this.callback(this.stat);
+            }
+            return;
+        }
 
-//     //画像を追加する
-//     lastImage = snapshot as HTMLImageElement;
-//     document.body.appendChild(lastImage);
-// }
+        //スコアボード保存
+        this._withAtsumaru(atsumaru => {
+            console.log("Atsumaru atsumaru.experimental.scoreboards.setRecord() start.");
+            this.stat = AtsumaruConsts.CommStat.DURING;
 
-// //スリープ
-// async function _sleep(ms: number) {
-//     return new Promise((resolve) => setTimeout(resolve, ms));
-// }
+            atsumaru.experimental?.scoreboards?.setRecord?.(boardId, score)
+                .then((value) => {
+                    console.log("Atsumaru atsumaru.experimental.scoreboards.setRecord() success.");
+                    this.stat = AtsumaruConsts.CommStat.SUCCESS;
+                    if (this.callback != null) {
+                        this.callback(this.stat);
+                    }
+                })
+                .catch((error: AtsumaruApiError) => {
+                    console.error(error.message);
+                    console.log("Atsumaru atsumaru.experimental.scoreboards.setRecord() fail.");
+                    this.stat = AtsumaruConsts.CommStat.FAIL;
+                    if (this.callback != null) {
+                        this.callback(this.stat);
+                    }
+                });
+        });
+    }
 
-// export async function atsumaru_screenshotHandler(): Promise<string> {
-//     console.log("atsumaru_screenshotHandler called");
+    check(): number {
+        return this.stat;
+    }
+}
 
-//     if (currentScene == null) {
-//         console.log("currentScene == null");
-//         return "";
-//     }
-//     else {
-//         currentScene.game.renderer.snapshot(_snapshot);
-//         //snapshotを読んだあと、コールバック処理関数の処理を行うのにラグがあるため、スリープで待つ。
-//         await _sleep(100);
-//         if (lastImage != null) {
-//             return lastImage.currentSrc;
-//         }
-//         else {
-//             return "";
-//         }
-//     }
-// }
+//--- scoreboard display -----------------------
+export class AtsumaruScoreboardDisplay extends AtsumaruWrapperBase {
 
-// //スクリーンショット画像差し替え
-// export function atsumaru_setScreenshoScene(scene: Phaser.Scene): void {
-//     currentScene = scene;
+    private stat: number;
+    private callback: ((stat: number) => void) | null;
 
-//     _withAtsumaru(atsumaru => {
-//         atsumaru.experimental?.screenshot?.setScreenshotHandler?.(atsumaru_screenshotHandler);
-//     });
+    constructor() {
+        super();
 
-//     console.log("atsumaru_setScreenshoScene called.");
-// }
+        this.stat = AtsumaruConsts.CommStat.NONE;
+        this.callback = null;
+    }
 
-// //サーバーデータ取得
-// let loadServerDataCallback: ((result: number, data: { key: string, value: string }[]) => void) | null = null;
-// export function atsumaru_loadServerData(fn: (result: number, data: { key: string, value: string }[]) => void): void {
+    setCallback(fn: (stat: number) => void): void {
+        this.callback = fn;
+    }
 
-//     loadServerDataCallback = fn;
+    save(boardId: number, score: number, callback?: (stat: number) => void): void {
+        console.log('AtsumaruScoreboardDisplay called.');
 
-//     if (!atsumaru_isValid()) {
-//         console.log("Atsumaru not in work.");
-//         if (loadServerDataCallback) {
-//             const data: { key: string, value: string }[] = [];
-//             loadServerDataCallback(Consts.Atsumaru.CommStat.FAIL, data);
-//         }
-//     }
+        if (callback != null) {
+            this.setCallback(callback);
+        }
 
-//     //データ取得
-//     _withAtsumaru(atsumaru => {
-//         console.log("Atsumaru atsumaru.storage.getItems() start.");
-//         atsumaru.storage.getItems()
-//             .then(items => {
-//                 if (loadServerDataCallback) {
-//                     loadServerDataCallback(Consts.Atsumaru.CommStat.SUCCESS, items);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.getItems() success.");
-//             })
-//             .catch((error: AtsumaruApiError) => {
-//                 console.error(error.message);
-//                 if (loadServerDataCallback) {
-//                     const data: { key: string, value: string }[] = [];
-//                     loadServerDataCallback(Consts.Atsumaru.CommStat.FAIL, data);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.getItems() fail.");
-//             });
-//     });
-// }
+        if (!this._isValid()) {
+            //アツマールが有効ではない
+            console.log("AtsumaruScoreboardDisplay. Atsumaru not in work.");
+            this.stat = AtsumaruConsts.CommStat.FAIL;
+            if (this.callback != null) {
+                this.callback(this.stat);
+            }
+            return;
+        }
 
-// //サーバーデータ保存
-// let saveServerDataContent: { key: string, value: string }[];
-// let saveServerDataCallback: ((result: number) => void) | null = null;
-// export function atsumaru_saveServerData(data: { key: string, value: string }[], fn: (result: number) => void): void {
+        //スコアボード表示
+        this._withAtsumaru(atsumaru => {
+            console.log("Atsumaru atsumaru.experimental.scoreboards.display() start.");
+            this.stat = AtsumaruConsts.CommStat.DURING;
 
-//     saveServerDataContent = data;
-//     saveServerDataCallback = fn;
+            atsumaru.experimental?.scoreboards?.display?.(boardId)
+                .then((value) => {
+                    console.log("Atsumaru atsumaru.experimental.scoreboards.display() success.");
+                    this.stat = AtsumaruConsts.CommStat.SUCCESS;
+                    if (this.callback != null) {
+                        this.callback(this.stat);
+                    }
+                })
+                .catch((error: AtsumaruApiError) => {
+                    console.error(error.message);
+                    console.log("Atsumaru atsumaru.experimental.scoreboards.display() fail.");
+                    this.stat = AtsumaruConsts.CommStat.FAIL;
+                    if (this.callback != null) {
+                        this.callback(this.stat);
+                    }
+                });
+        });
+    }
 
-//     if (!atsumaru_isValid()) {
-//         console.log("Atsumaru not in work.");
-//         if (saveServerDataCallback) {
-//             saveServerDataCallback(Consts.Atsumaru.CommStat.FAIL);
-//         }
-//     }
-
-
-//     //データ保存
-//     _withAtsumaru(atsumaru => {
-//         console.log("Atsumaru atsumaru.storage.setItems() start.");
-//         atsumaru.storage.setItems(saveServerDataContent)
-//             .then((value) => {
-//                 if (saveServerDataCallback) {
-//                     saveServerDataCallback(Consts.Atsumaru.CommStat.SUCCESS);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.setItems() success.");
-//             })
-//             .catch((error: AtsumaruApiError) => {
-//                 console.error(error.message);
-//                 if (saveServerDataCallback) {
-//                     saveServerDataCallback(Consts.Atsumaru.CommStat.FAIL);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.setItems() fail.");
-//             });
-//     });
-// }
-
-// //セーブデータ削除
-// let deleteServerDataKey: string = "";
-// let deleteServerDataCallback: ((result: number) => void) | null = null;
-// export function atsumaru_deleteServerData(key: string, fn: (result: number) => void): void {
-
-//     deleteServerDataKey = key;
-//     deleteServerDataCallback = fn;
-
-//     if (!atsumaru_isValid()) {
-//         console.log("Atsumaru not in work.");
-//         if (deleteServerDataCallback) {
-//             deleteServerDataCallback(Consts.Atsumaru.CommStat.FAIL);
-//         }
-//     }
-
-//     //データ削除
-//     _withAtsumaru(atsumaru => {
-//         console.log("Atsumaru atsumaru.storage.removeItem() start.");
-//         atsumaru.storage.removeItem(deleteServerDataKey)
-//             .then((value) => {
-//                 if (deleteServerDataCallback) {
-//                     deleteServerDataCallback(Consts.Atsumaru.CommStat.SUCCESS);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.removeItem() success.");
-//             })
-//             .catch((error: AtsumaruApiError) => {
-//                 console.error(error.message);
-//                 if (deleteServerDataCallback) {
-//                     deleteServerDataCallback(Consts.Atsumaru.CommStat.FAIL);
-//                 }
-//                 console.log("Atsumaru atsumaru.storage.removeItem() fail.");
-//             });
-//     });
-// }
-
-// function _withAtsumaru(fn: (atsumaru: RPGAtsumaruApi) => void) {
-//     const atsumaru = window.RPGAtsumaru;
-//     if (atsumaru) {
-//         fn(atsumaru);
-//     }
-//     else {
-//         // console.log("RPGAtsumaruオブジェクトが存在しません");
-//     }
-// }
+    check(): number {
+        return this.stat;
+    }
+}
